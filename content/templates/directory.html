@@ -1,0 +1,330 @@
+{% extends 'layouts/main.html' %}
+{% load staticfiles %}
+{% block content %}
+<div class="row">
+    <div class="page-header">
+        <div class="d-flex align-items-center">
+            <h2 class="page-header-title">Directory Form</h2>
+            <div>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="db-default.html"><i class="ti ti-home"></i></a></li>
+                    <li class="breadcrumb-item active">Directory</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Page Header -->
+<div class="row">
+    <div class="col-xl-12">
+        <!-- Sorting -->
+        <div class="widget has-shadow">
+            <div class="widget-header bordered no-actions d-flex align-items-center">
+                <button type="button" class="btn btn-danger mr-1 mb-2" onclick="openModal(-1)"><li class="la la-eyedropper"></li> Add</button>
+                <button id="openModal" style="display:none" data-toggle="modal" data-target="#addModal"></button>
+
+            </div>
+            <div class="widget-body">
+                <div class="table-responsive">
+                    <table id="sorting-table" class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Emp ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Plant</th>
+                                <th>Shift</th>
+                                <th>Department</th>
+                                <th>Title</th>
+                                <th><span style="width:100px;">Status</span></th>
+                                <th>Status Comment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="directoryTB">
+                            {% for directory in directories %}
+                            <tr>
+                                <td><span class="text-primary">{{directory.EmpID}}</span></td>
+                                <td>{{directory.first_name}}</td>
+                                <td>{{directory.last_name}}</td>
+                                {% if directory.plant == 'N' %}
+                                <td>North</td>
+                                {% elif directory.plant == 'S' %}
+                                <td>South</td>
+                                {% elif directory.plant == 'V' %}
+                                <td>Vine</td>
+                                {% elif directory.plant == 'O' %}
+                                <td>Overland</td>
+                                {% endif %}
+                                <td>{{directory.shift}}</td>
+                                {% if directory.department == 'P' %}
+                                <td>Production</td>
+                                {% elif directory.department == 'Q' %}
+                                <td>Quality</td>
+                                {% elif directory.department == 'S' %}
+                                <td>Sanitation</td>
+                                {% elif directory.department == 'W' %}
+                                <td>WAREHOUSE</td>
+                                {% elif directory.department == 'A' %}
+                                <td>Admin</td>
+                                {% endif %}
+                                <td>{{directory.title}}</td>
+                                <td><span style="width:100px;">
+                                        {% if directory.status == True %}
+                                        <span class="badge-text badge-text-small info">Active</span>
+                                        {% else %}
+                                        <span class="badge-text badge-text-small danger">Closed</span>
+                                        {% endif %}
+                                    </span></td>
+                                <td>{{directory.comment}}</td>
+                                <td class="td-actions">
+                                    <a onclick="openModal({{directory.pk}})"><i class="la la-edit edit"></i></a>
+                                    <a onclick="delOne({{directory.pk}})"><i class="la la-close delete"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- End Sorting -->
+    </div>
+</div>
+
+<div id="addModal" class="modal fade">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Directory</h4>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">×</span>
+                    <span class="sr-only">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="curPK">
+                <form>
+                    <div class="form-group row mb-3">
+                        <div class="col-xl-6 mb-3">
+                            <label class="">Emp ID<span class="text-danger ml-2">*</span></label>
+                            <input type="text" class="form-control" id="empID" placeholder="Type Emp ID" required>
+                        </div>
+                        <div class="col-xl-6">
+                        </div>
+                    </div>
+                    <div class="form-group row mb-3">
+                        <div class="col-xl-6 mb-3">
+                            <label class="">First Name<span class="text-danger ml-2">*</span></label>
+                            <input type="text" class="form-control" id="firstName" placeholder="Type First Name"
+                                required>
+                        </div>
+                        <div class="col-xl-6">
+                            <label class="">Last Name<span class="text-danger ml-2">*</span></label>
+                            <input type="text" class="form-control" id="lastName" placeholder="Type Last Name" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group row mb-3">
+                        <div class="col-xl-6 mb-3">
+                            <label class="">Plant<span class="text-danger ml-2">*</span></label>
+                            <select class="form-control" id="plant">
+                                <option value="N">North</option>
+                                <option value="S">South</option>
+                                <option value="V">Vine</option>
+                                <option value="O">Overland</option>
+                            </select>
+                        </div>
+                        <div class="col-xl-6">
+                            <label class="">Shift<span class="text-danger ml-2">*</span></label>
+                            <input type="number" class="form-control" id="shift" placeholder="Type Shift" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group row mb-3">
+                        <div class="col-xl-6 mb-3">
+                            <label class="">Department<span class="text-danger ml-2">*</span></label>
+                            <select class="form-control" id="department">
+                                <option value="P">Production</option>
+                                <option value="Q">Quality</option>
+                                <option value="S">Sanitation</option>
+                                <option value="W">Warehouse</option>
+                                <option value="A">Admin</option>
+                            </select>
+                        </div>
+                        <div class="col-xl-6">
+                            <label class="">Title<span class="text-danger ml-2">*</span></label>
+                            <select class="form-control" id="title">
+                                {% for t in titles %}
+                                <option value="{{t.title}}">{{t.title}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row mb-3">
+                        <div class="col-xl-6 mb-3">
+                            <label class="">Status<span class="text-danger ml-2">*</span></label>
+                            <select class="form-control" id="status">
+                                <option value='true'>Active</option>
+                                <option value='false'>Closed</option>
+                            </select>
+                        </div>
+                        <div class="col-xl-6">
+                            <label class="">Status Comment<span class="text-danger ml-2">*</span></label>
+                            <input type="text" class="form-control" id="comment" placeholder="Type Comment" required>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-shadow" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveOne()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function openModal(pk) {
+        $("#openModal").trigger('click');
+        $("#empID").val("");
+        $("#firstName").val("");
+        $("#lastName").val("");
+        $("#plant").val("");
+        $("#shift").val("");
+        $("#department").val("");
+        $("#title").val("");
+        $("#status").val("");
+        $("#comment").val("");
+        $("#curPK").val(-1);
+        if (pk != -1) {
+            $.ajax({
+                async: false,
+                type: "GET",
+                url: "{% url 'main:get_directory' %}",
+                data: { pk: pk },
+                dataType: 'json',
+                success: function (data) {
+                    if (data != "") {
+                        var html = "";
+                        var jsondata = JSON.parse(data);
+                        var row = jsondata[0].fields
+                        $("#curPK").val(jsondata[0].pk);
+                        $("#empID").val(row.EmpID);
+                        $("#firstName").val(row.first_name);
+                        $("#lastName").val(row.last_name);
+                        $("#plant").val(row.plant);
+                        $("#shift").val(row.shift);
+                        $("#department").val(row.department);
+                        $("#title").val(row.title);
+                        if (row.status) {
+                            $("#status").val('true');
+                        } else {
+                            $("#status").val('false');
+                        }
+                        $("#comment").val(row.comment);
+
+                    } else {
+                        alert("there is no data!")
+
+                    }
+                }
+            });
+
+        }
+
+    }
+
+    function saveOne() {
+        var curPK = $("#curPK").val();
+        var empID = $("#empID").val();
+        var firstName = $("#firstName").val();
+        var lastName = $("#lastName").val();
+        var plant = $("#plant").val();
+        var shift = $("#shift").val();
+        var department = $("#department").val();
+        var title = $("#title").val();
+        var status = $("#status").val();
+        var comment = $("#comment").val();
+
+        if (empID.trim() == "" || firstName.trim() == "" || lastName.trim() == "" || plant == "" || shift == "" || department == "" || title.trim() == "" || status == "" ) {
+
+            alert("put all fields!");
+            return;
+
+        }
+
+
+        if (curPK == -1) {
+
+            $.ajax({
+                async: false,
+                type: "GET",
+                url: "{% url 'main:add_directory' %}",
+                data: { empID: empID, firstName: firstName, lastName: lastName, plant: plant, shift: shift, department: department, title: title, status: status, comment: comment },
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == "error") {
+                        alert("duplicated emp ID or title!");
+                        return;
+                    } else {
+                        location.reload();
+                    }
+
+                }
+            });
+
+        } else {
+
+            $.ajax({
+                async: false,
+                type: "GET",
+                url: "{% url 'main:update_directory' %}",
+                data: { pk: curPK, empID: empID, firstName: firstName, lastName: lastName, plant: plant, shift: shift, department: department, title: title, status: status, comment: comment },
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == "error") {
+                        alert("put correct inputs!");
+                        return;
+                    } else {
+                        location.reload();
+                    }
+
+                }
+            });
+
+
+
+        }
+
+    }
+
+    function delOne(pk) {
+        if (confirm("you want to delete this step ?")) {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'main:del_directory' %}",
+                data: { pk: pk },
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == "error") {
+                        alert("failed!");
+                        return;
+                    } else {
+                        location.reload();
+                    }
+
+                }
+            });
+
+        }
+
+    }
+
+
+</script>
+
+{% endblock %}

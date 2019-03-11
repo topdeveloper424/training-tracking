@@ -1,0 +1,100 @@
+{% extends 'layouts/main.html' %}
+{% load staticfiles %}
+{% block content %}
+<div class="row">
+    <div class="page-header">
+        <div class="d-flex align-items-center">
+            <h2 class="page-header-title">Directory Form</h2>
+            <div>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="db-default.html"><i class="ti ti-home"></i></a></li>
+                    <li class="breadcrumb-item active">Directory</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Page Header -->
+<div class="row">
+    <div class="col-xl-12">
+        <!-- Sorting -->
+        <div class="widget has-shadow">
+            <div class="widget-header bordered no-actions d-flex align-items-center">
+            </div>
+            <div class="widget-body">
+                <div class="table-responsive">
+                    <table id="sorting-table" class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Emp ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Plant</th>
+                                <th>Shift</th>
+                                <th>Department</th>
+                                <th>Title</th>
+                                <th>0</th>
+                                <th>30</th>
+                                <th>60</th>
+                                <th>90</th>
+                                <th>120</th>
+                                <th>180</th>
+                                <th>270</th>
+                                <th>365</th>
+                                <th>TOP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in res_list %}
+                            <tr>
+                                <td><span class="text-primary">{{item.EmpID}}</span></td>
+                                <td>{{item.first_name}}</td>
+                                <td>{{item.last_name}}</td>
+                                {% if item.plant == 'N' %}
+                                <td>North</td>
+                                {% elif item.plant == 'S' %}
+                                <td>South</td>
+                                {% elif item.plant == 'V' %}
+                                <td>Vine</td>
+                                {% elif item.plant == 'O' %}
+                                <td>Overland</td>
+                                {% endif %}
+                                <td>{{item.shift}}</td>
+                                {% if item.department == 'P' %}
+                                <td>Production</td>
+                                {% elif item.department == 'Q' %}
+                                <td>Quality</td>
+                                {% elif item.department == 'S' %}
+                                <td>Sanitation</td>
+                                {% elif item.department == 'W' %}
+                                <td>WAREHOUSE</td>
+                                {% elif item.department == 'A' %}
+                                <td>Admin</td>
+                                {% endif %}
+                                <td>{{item.title}}</td>
+                                <td>{{item.0}}</td>
+                                <td>{{item.30}}</td>
+                                <td>{{item.60}}</td>
+                                <td>{{item.90}}</td>
+                                <td>{{item.120}}</td>
+                                <td>{{item.180}}</td>
+                                <td>{{item.270}}</td>
+                                <td>{{item.365}}</td>
+                                <td>{{item.TOP}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- End Sorting -->
+    </div>
+</div>
+
+<script>
+
+
+</script>
+
+{% endblock %}

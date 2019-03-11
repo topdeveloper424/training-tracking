@@ -1,0 +1,349 @@
+{% extends 'layouts/main.html' %}
+{% load staticfiles %}
+{% block content %}
+<div class="row">
+        <div class="page-header">
+            <div class="d-flex align-items-center">
+                <h2 class="page-header-title">Train Records Form</h2>
+                <div>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="db-default.html"><i class="ti ti-home"></i></a></li>
+                        <li class="breadcrumb-item active">Train Records</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Page Header -->
+    <div class="row">
+        <div class="col-xl-12">
+            <!-- Sorting -->
+            <div class="widget has-shadow">
+                <div class="widget-header bordered no-actions d-flex align-items-center">
+                    <button id="openModal" style="display:none" data-toggle="modal" data-target="#addModal"></button>
+                    <button type="button" class="btn btn-danger mr-1 mb-2" onclick="openModal(-1)"><li class="la la-eyedropper"></li> Add</button>
+                    
+                </div>
+                <div class="widget-body">
+                    <div class="table-responsive">
+                        <table id="sorting-table" class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Emp ID</th>
+                                    <th>Title</th>
+                                    <th>Evaluation Step</th>
+                                    <th>Type</th>
+                                    <th>Evaluation Date</th>
+                                    <th>Grade</th>
+                                    <th>Evaluated By</th>
+                                    <th>Attachments</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="directoryTB">
+                                {% for record in records %}
+                                <tr>
+                                    <td><span class="text-primary"></span>{{record.EmpID}}</span></td>
+                                    <td>{{record.title}}</td>
+                                    <td>{{record.eval_step}}</td>
+                                    {% if record.record_type == 'O' %}
+                                    <td>Observation</td>
+                                    {% elif record.record_type == 'E' %}
+                                    <td>Evaluation</td>
+                                    {% elif record.record_type == 'T' %}
+                                    <td>Test</td>
+                                    {% else %}
+                                    <td>Status Change</td>
+                                    {% endif %}
+                                    <td>{{record.eval_date}}</td>
+                                    {% if record.grade %}
+                                    <td>PASS</td>
+                                    {% else %}
+                                    <td>FAIL</td>
+                                    {% endif %}
+                                    <td>{{record.eval_by}}</td>
+                                    <td><a href="{% static 'upload/' %}{{record.attachment}}" target="_blank" class="btn btn-secondary" {% if record.attachment %} download="{{record.EmpID}}-{{record.title}}-{{record.eval_step}}" {% endif %}><i class="la la-cloud-download"></i></a></td>
+                                    <td class="td-actions">
+                                        <a onclick="editModal('{{record.pk}}')"><i class="la la-edit edit"></i></a>
+                                        <a onclick="delOne('{{record.pk}}')"><i class="la la-close delete"></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- End Sorting -->
+        </div>
+    </div>
+
+        <div id="addModal" class="modal fade">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Training Record</h4>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span aria-hidden="true">×</span>
+                            <span class="sr-only">close</span>
+                        </button>
+                    </div>
+                <form method="POST" action="{% url 'main:add_record' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <input type="hidden" id="mode" name="mode">
+                        <input type="hidden" id="curPK" name="curPK">
+                        <div class="form-group row mb-3">
+                            <div class="col-xl-12">
+                                <label class="">Emp ID and Title<span class="text-danger ml-2">*</span></label>
+                                <select class="form-control" name="editEmpID" id="editEmpID" onchange="changeEmp()" required>
+                                    {% for emp in emps %}
+                                    <option value="{{emp.EmpID}}@@{{emp.title}}">{{emp.EmpID}} - {{emp.title}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-3">
+                            <div class="col-xl-4">
+                                <label class="">Evaluation Step<span class="text-danger ml-2">*</span></label>
+                                <select class="form-control" id="editStep" name="editStep" required>
+                                    <option value="0" selected>0</option>
+                                    <option value="30">30</option>
+                                    <option value="60">60</option>
+                                    <option value="90">90</option>
+                                    <option value="120">120</option>
+                                    <option value="180">180</option>
+                                    <option value="270">270</option>
+                                    <option value="365">365</option>
+                                    <option value="TOP">TOP</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-4 mb-3">
+                                <label class="">Type<span class="text-danger ml-2">*</span></label>
+                                <select class="form-control" id="editType" name="editType" required>
+                                    <option value="O" selected>Observation</option>
+                                    <option value="E">Evaluation</option>
+                                    <option value="T">Test</option>
+                                    <option value="S">Status Change</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-4 mb-3">
+                                <label class="">Evaluation Date<span class="text-danger ml-2">*</span></label>
+                                <input type="date" class="form-control" id="editDate" name="editDate" required>
+                            </div>
+
+
+                        </div>
+
+                        <div class="form-group row mb-3">
+
+                            <div class="col-xl-4 mb-3">
+                                <label class="">Grade<span class="text-danger ml-2">*</span></label>
+                                <select class="form-control" id="editGrade" name="editGrade" required>
+                                    <option value="P">PASS</option>
+                                    <option value="F">FAIL</option>
+                                </select>
+                            </div>
+
+                            <div class="col-xl-4 mb-3">
+                                <label class="">Evaluated By<span class="text-danger ml-2">*</span></label>
+                                <input type="text" class="form-control" id="editBy" name="editBy" required>
+                            </div>
+                            <div class="col-xl-4 mb-3">
+                                <label class="">Attachments<span class="text-danger ml-2">*</span></label>
+                                <input type="file" class="form-control" id="editAttach" name="editAttach">
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-shadow" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+
+                </div>
+            </div>
+        </div>
+
+    <script>
+
+        function getTypes(){
+            editEmpID = $("#editEmpID").val();
+
+            $.ajax({
+                    async:false,
+                    type: "GET",
+                    url: "{% url 'main:get_types' %}",
+                    data: {editEmpID:editEmpID},
+                    dataType: 'json',
+                    success: function (data) {
+                        if(data!=""){
+                            var jsondata = JSON.parse(data);
+                            var html = "";
+                            for(var i = 0 ; i<jsondata.length; i ++){
+                                var row = jsondata[i].fields;
+                                html += '<option value="'+row.step+'">'+row.step+'</option>';
+                            }
+                            $("#editStep").html(html);
+                        }else{
+                            $("#editStep").html('');
+                        }
+
+                    }
+            });
+
+
+        }
+
+        function changeEmp(){
+            getTypes();
+        }
+
+        function openModal(){
+            $("#openModal").trigger('click');
+            $("#mode").val(0);
+            $("#editStep").val("0");
+            $("#editType").val("O");
+            $("#editDate").val("");
+            $("#editGrade").val("");
+            $("#editBy").val("");
+            $("#editAttach").val("");
+            getTypes();
+
+        }
+
+        function editModal(pk){
+            $("#openModal").trigger('click');
+            $("#mode").val(1);
+            $("#curPK").val(pk);
+            $.ajax({
+                    async:false,
+                    type: "GET",
+                    url: "{% url 'main:get_record' %}",
+                    data: {pk:pk},
+                    dataType: 'json',
+                    success: function (data) {
+                        if(data != ""){
+                            var jsondata = JSON.parse(data);
+                            var one_step = jsondata[0].fields;
+                            $("#editEmpID").html("<option value='"+one_step.EmpID+"@@"+one_step.title+"'>"+one_step.EmpID+" - " + one_step.title +"</option>");
+                            $("#editStep").val(one_step.eval_step);
+                            $("#editType").val(one_step.record_type);
+                            $("#editDate").val(one_step.eval_date);
+                            if(one_step.grade){
+                                $("#editGrade").val('P');
+                            }else{
+                                $("#editGrade").val('F');
+                            }
+                            $("#editBy").val(one_step.eval_by);
+                            $("#editAttach").val(one_step.attachment);
+                        }
+                    }
+                });
+                getTypes();
+
+
+        }
+        function saveAdd(){
+
+            var mode = $("#mode").val();
+            var step = $("#editStep").val();
+            var type = $("#editType").val();
+            var date = $("#editDate").val();
+            var grade = $("#editGrade").val();
+            var by = $("#editBy").val();
+            var attach = $("#editAttach").val();
+
+            if(step == "" || type == "" || date == ""|| grade =="" || by.trim() == ""){
+                alert("Put correct inputs !");
+                return;
+            }
+
+            if(mode == 0){
+                $.ajax({
+                    async:false,
+                    type: "GET",
+                    url: "{% url 'main:add_record' %}",
+                    data: {step:step,type:type,date:date,grade:grade,by:by,attach:attach},
+                    dataType: 'json',
+                    success: function (data) {
+                        if(data.status == "error"){
+                            alert("the title already exist!");
+                            return;
+                        }else{
+                            location.reload();
+                        }
+
+                    }
+                });
+            }else{
+                var curPK = $("#curPK").val();
+
+                $.ajax({
+                    async:false,
+                    type: "GET",
+                    url: "{% url 'main:add_record' %}",
+                    data: {pk:pk,step:step,type:type,date:date,grade:grade,by:by,attach:attach},
+                    dataType: 'json',
+                    success: function (data) {
+                        if(data.status == "error"){
+                            alert("the title already exist!");
+                            return;
+                        }else{
+                            location.reload();
+                        }
+
+                    }
+                });
+
+            }
+
+        }
+
+        function delOne(pk){
+            if(confirm("you want to delete this step ?")){
+                $.ajax({
+                        type: "GET",
+                        url: "{% url 'main:del_record' %}",
+                        data: {pk:pk},
+                        dataType: 'json',
+                        success: function (data) {
+                            if(data.status == "error"){
+                                alert("failed!");
+                                return;
+                            }else{
+                                location.reload();
+                            }
+
+                        }
+                    });
+            }
+
+        }
+
+        function download(pk){
+            
+            $.ajax({
+                    type: "GET",
+                    url: "{% url 'main:download_attach' %}",
+                    data: {pk:pk},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        if(data != ""){
+                            var jsondata = JSON.parse(data);
+                            var record = jsondata[0].fields;
+                            window.location="{% static 'upload/' %}"+record.attachment;
+
+                        }
+
+                    }
+                });
+
+        }
+
+    </script>
+
+{% endblock %}
