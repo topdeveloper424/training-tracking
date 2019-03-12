@@ -8,8 +8,32 @@ import json
 import os
 from django.conf import settings
 from django.core.files import File
-from datetime import datetime
+import datetime
 # Create your views here.
+
+def get_step_by_index(index):
+    step = 0
+    if index == 0:
+        step = 0
+    elif index == 1:
+        step = 30
+    elif index == 2:
+        step = 60
+    elif index == 3:
+        step = 90
+    elif index == 4:
+        step = 120
+    elif index == 5:
+        step = 180
+    elif index == 6:
+        step = 270
+    elif index == 7:
+        step = 365
+    elif index == 8:
+        step = 'TOP'
+    return step
+        
+
 def index(request):
     directories = Directory.objects.filter(status=True)
     res_list = []
@@ -26,17 +50,27 @@ def index(request):
         res_row['title'] = directory.title
         res_row['department'] = directory.department
 
+        step_row = []
+        step_row.append('N/A') #0  - 0
+        step_row.append('N/A') #30  - 0
+        step_row.append('N/A') #60  - 0
+        step_row.append('N/A') #90  - 0
+        step_row.append('N/A') #120  - 0
+        step_row.append('N/A') #180  - 0
+        step_row.append('N/A') #270  - 0
+        step_row.append('N/A') #365  - 0
+        step_row.append('N/A') #TOP  - 0
 
-        res_row['0'] = 'N/A'
-        res_row['30'] = 'N/A'
-        res_row['60'] = 'N/A'
-        res_row['90'] = 'N/A'
-        res_row['120'] = 'N/A'
-        res_row['180'] = 'N/A'
-        res_row['270'] = 'N/A'
-        res_row['365'] = 'N/A'
-        res_row['TOP'] = 'N/A'
-
+        date_row = []
+        date_row.append('N/A') #0  - 0
+        date_row.append('N/A') #30  - 1
+        date_row.append('N/A') #60  - 2
+        date_row.append('N/A') #90  - 3
+        date_row.append('N/A') #120  - 4
+        date_row.append('N/A') #180  - 5
+        date_row.append('N/A') #270  - 6
+        date_row.append('N/A') #365  - 7
+        date_row.append('N/A') #TOP  - 8
 
         reqs = StepReq.objects.filter(title=title).order_by('step')
         for req in reqs:
@@ -51,9 +85,13 @@ def index(request):
                 req_array.append('S')
             req_len = len(req_array)
 
+
             records = TrainingRecord.objects.filter(EmpID = empID,title=title,eval_step=req.step)
+            status_date = None
             fail_flag = False
             for rec in records:
+                if rec.record_type == 'S':
+                    status_date = rec.eval_date 
                 if rec.grade:
                     for arr in req_array:
                         if arr ==  rec.record_type:
@@ -61,37 +99,83 @@ def index(request):
                 if rec.grade == False:
                     if rec.record_type in req_array:
                         fail_flag = True
-            result = 'N/A'
+            result = 'REQ'
+            dat = None
             pass_count = 0
             if len(req_array) == 0:
                 result = 'PASS'
+                dat = status_date
                 pass_count += 1
             elif fail_flag:
                 result = 'FAIL'
-            elif fail_flag == False and len(req_array) != req_len:
+            elif len(req_array) != req_len:
                 result = 'PENDING'
             if req.step == '0':
-                res_row['0'] = result
+                step_row[0] = result
+                date_row[0] = dat
             elif req.step == '30':
-                res_row['30'] = result
+                step_row[1] = result
+                date_row[1] = dat
             elif req.step == '60':
-                res_row['60'] = result
+                step_row[2] = result
+                date_row[2] = dat
             elif req.step == '90':
-                res_row['90'] = result
+                step_row[3] = result
+                date_row[3] = dat
             elif req.step == '120':
-                res_row['120'] = result
+                step_row[4] = result
+                date_row[4] = dat
             elif req.step == '180':
-                res_row['180'] = result
+                step_row[5] = result
+                date_row[5] = dat
             elif req.step == '270':
-                res_row['270'] = result
+                step_row[6] = result
+                date_row[6] = dat
             elif req.step == '365':
-                res_row['365'] = result
+                step_row[7] = result
+                date_row[7] = dat
             elif req.step == 'TOP':
-                res_row['TOP'] = result
+                step_row[8] = result
+                date_row[8] = dat
             if pass_count == len(reqs):
-                res_row['TOP'] = 'ELIGIBLE'
+                step_row[8] = 'PASS'
+            elif fail_flag:
+                step_row[8] = 'NOT ELIGIBLE'
             else:
-                res_row['TOP'] = 'NOT ELIGIBLE'
+                step_row[8] = 'ELIGIBLE'
+
+        last_idx = -1
+        for idx, val in enumerate(step_row):
+            if val == 'PASS':
+                last_idx = idx
+        if last_idx != -1:
+            for idx, val in enumerate(step_row):
+                if idx <= last_idx or idx == len(step_row)-1:
+                    continue
+                if step_row[idx] == 'REQ':
+                    cur_step = get_step_by_index(idx)
+                    prev_step = get_step_by_index(last_idx)
+                    last_date = date_row[last_idx]
+                    diff = int(cur_step)  - int(prev_step)
+                    last_date += datetime.timedelta(days=diff)
+                    step_row[idx] = last_date
+                    date_row[idx] = last_date
+                    last_idx = idx
+        for idx, val in enumerate(step_row):
+            if step_row[idx] == None or step_row[idx] == 'REQ':
+                step_row[idx] = 'N/A'
+#            if step_row[idx] == 'REQ'
+        res_row['steps'] = step_row
+#        res_row['dates'] = date_row
+        
+
+
+
+
+                    
+
+
+
 
         res_list.append(res_row)
     print(res_list)

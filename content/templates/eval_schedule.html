@@ -4,11 +4,11 @@
 <div class="row">
     <div class="page-header">
         <div class="d-flex align-items-center">
-            <h2 class="page-header-title">Directory Form</h2>
+            <h2 class="page-header-title">Evaluation Schedule</h2>
             <div>
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item"><a href="db-default.html"><i class="ti ti-home"></i></a></li>
-                    <li class="breadcrumb-item active">Directory</li>
+                    <li class="breadcrumb-item active">Schedule</li>
                 </ul>
             </div>
         </div>
@@ -72,15 +72,9 @@
                                 <td>Admin</td>
                                 {% endif %}
                                 <td>{{item.title}}</td>
-                                <td>{{item.0}}</td>
-                                <td>{{item.30}}</td>
-                                <td>{{item.60}}</td>
-                                <td>{{item.90}}</td>
-                                <td>{{item.120}}</td>
-                                <td>{{item.180}}</td>
-                                <td>{{item.270}}</td>
-                                <td>{{item.365}}</td>
-                                <td>{{item.TOP}}</td>
+                                {% for i in item.steps %}
+                                <td>{{i}}</td>
+                                {% endfor %}
                             </tr>
                             {% endfor %}
                         </tbody>
